@@ -1,4 +1,4 @@
 Modern Methods in Machine Learning Project
 ==========================================
 
-Implements an VAE for the CelebA dataset
+Implements a VAE for the CelebA dataset
