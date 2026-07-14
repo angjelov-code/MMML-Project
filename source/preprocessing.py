@@ -1,6 +1,13 @@
-should_train = False
+import os
+import numpy as np
+import random
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras import layers, Model
+import glob
 
 image_size = 64
+batch_size = 128
 
 def preprocess_image(image_path):
     image = tf.io.read_file(image_path)
@@ -24,30 +31,27 @@ def preprocess_image(image_path):
     image = image / 255.0  # Normalize to [0, 1]
     return image
 
-# Get a list of all image file paths
-image_paths = [os.path.join(data_root, fname) for fname in os.listdir(data_root) if fname.endswith('.jpg')]
+def split_images(data_root):
+    # Get a list of all image file paths
+    image_paths = [os.path.join(data_root, fname) for fname in os.listdir(data_root) if fname.endswith('.jpg')]
 
-# Shuffle the image paths for a random split
-random.seed(42) # for reproducibility
-random.shuffle(image_paths)
+    # Shuffle the image paths for a random split
+    random.seed(42) # for reproducibility
+    random.shuffle(image_paths)
 
-# Split data into training and testing sets (e.g., 80% train, 20% test)
-train_size = int(0.8 * len(image_paths))
-train_image_paths = image_paths[:train_size]
-test_image_paths = image_paths[train_size:]
+    # Split data into training and testing sets (e.g., 80% train, 20% test)
+    train_size = int(0.8 * len(image_paths))
+    train_image_paths = image_paths[:train_size]
+    test_image_paths = image_paths[train_size:]
 
-print(f"Total images: {len(image_paths)}")
-print(f"Training images: {len(train_image_paths)}")
-print(f"Test images: {len(test_image_paths)}")
+    # Create tf.data.Dataset for training
+    train_dataset = tf.data.Dataset.from_tensor_slices(train_image_paths)
+    train_dataset = train_dataset.map(preprocess_image, num_parallel_calls=tf.data.AUTOTUNE)
+    train_dataset = train_dataset.shuffle(buffer_size=1024).batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE)
 
-batch_size = 128
-
-# Create tf.data.Dataset for training
-train_dataset = tf.data.Dataset.from_tensor_slices(train_image_paths)
-train_dataset = train_dataset.map(preprocess_image, num_parallel_calls=tf.data.AUTOTUNE)
-train_dataset = train_dataset.shuffle(buffer_size=1024).batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE)
-
-# Create tf.data.Dataset for testing
-test_dataset = tf.data.Dataset.from_tensor_slices(test_image_paths)
-test_dataset = test_dataset.map(preprocess_image, num_parallel_calls=tf.data.AUTOTUNE)
-test_dataset = test_dataset.batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE) # No need to shuffle test data
+    # Create tf.data.Dataset for testing
+    test_dataset = tf.data.Dataset.from_tensor_slices(test_image_paths)
+    test_dataset = test_dataset.map(preprocess_image, num_parallel_calls=tf.data.AUTOTUNE)
+    test_dataset = test_dataset.batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE)
+    
+    return train_dataset, test_dataset

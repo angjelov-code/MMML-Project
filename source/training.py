@@ -1,5 +1,12 @@
+import os
+import tensorflow as tf
+import glob
 import tensorflow.keras.backend as K
 from tensorflow.keras.utils import plot_model
+
+import model
+
+checkpoint_dir = '../parameters'
 
 # Define the VAE loss function
 def vae_loss(x, x_recon, mean, log_variance):
@@ -14,13 +21,8 @@ def vae_loss(x, x_recon, mean, log_variance):
     total_loss = tf.reduce_mean(reconstruction_loss + kl_loss)
     return total_loss
 
-# Optimizer
-optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
-
-# Compile the VAE model (though we'll use a custom training loop)
-# For simplicity, we can define a custom train step if not compiling with fit()
 @tf.function
-def train_step(images):
+def train_step(images, vae, optimizer):
     with tf.GradientTape() as tape:
         reconstructed_images, mean, log_variance = vae(images)
         loss = vae_loss(images, reconstructed_images, mean, log_variance)
@@ -29,22 +31,15 @@ def train_step(images):
     optimizer.apply_gradients(zip(gradients, vae.trainable_variables))
     return loss
 
-print("VAE loss function and optimizer defined.")
-
-EPOCHS = 35
-BEST_LOSS = float('inf')
-CHECKPOINT_DIR = './vae_checkpoints'
-
-# Create directory if it doesn't exist
-if not os.path.exists(CHECKPOINT_DIR):
-    os.makedirs(CHECKPOINT_DIR)
-
-if should_train:
-    for epoch in range(EPOCHS):
+def train_VAE(epochs, vae, learning_rate, train_dataset, test_dataset):
+    optimizer = tf.keras.optimizers.Adam(learning_rate)
+    best_loss = float('inf')
+    
+    for epoch in range(epochs):
         total_train_loss = 0
         num_train_batches = 0
         for batch_num, image_batch in enumerate(train_dataset): # Use train_dataset for training
-            loss = train_step(image_batch)
+            loss = train_step(image_batch, vae, optimizer)
             total_train_loss += loss
             num_train_batches += 1
             if batch_num % 100 == 0: # Print loss every 100 batches
@@ -65,15 +60,16 @@ if should_train:
         print(f"\nEpoch {epoch+1} completed. Average Train Loss: {avg_train_loss:.4f}, Average Test Loss: {avg_test_loss:.4f}\n")
 
         # Save best model parameters
-        if avg_test_loss < BEST_LOSS:
-            BEST_LOSS = avg_test_loss
-            checkpoint_path = os.path.join(CHECKPOINT_DIR, f'vae_weights_best_loss_{BEST_LOSS:.4f}.weights.h5')
+        if avg_test_loss < best_loss:
+            best_loss = avg_test_loss
+            checkpoint_path = os.path.join(checkpoint_dir, f'vae_weights_loss_{best_loss:.4f}.weights.h5')
             vae.save_weights(checkpoint_path)
-            print(f"Saved best model weights to {checkpoint_path} with test loss: {BEST_LOSS:.4f}")
+            print(f"Saved best model weights to {checkpoint_path} with test loss: {best_loss:.4f}")
 
     print("VAE Training Complete.")
-else:
-    saved_checkpoints = glob.glob(os.path.join(CHECKPOINT_DIR, 'vae_weights_best_loss_*.h5'))
+
+def load_parameters(vae, test_dataset):
+    saved_checkpoints = glob.glob(os.path.join(checkpoint_dir, 'vae_weights_loss_*.h5'))
 
     if saved_checkpoints:
         # Get the latest (or 'best' if sorted by loss in filename) checkpoint
@@ -86,8 +82,3 @@ else:
         print("VAE weights loaded successfully.")
     else:
         print("No saved VAE weights found in the checkpoint directory.")
-
-num_generations = 16
-random_latent_vectors = tf.random.normal(shape=(num_generations, latent_dim))
-
-generated_images = vae.decoder(random_latent_vectors)

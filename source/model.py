@@ -1,5 +1,8 @@
+import tensorflow as tf
+from tensorflow.keras import layers, Model
+
 class Encoder(Model):
-    def __init__(self, latent_dim):
+    def __init__(self, latent_dim, image_size):
         super(Encoder, self).__init__()
         self.latent_dim = latent_dim
         self.encoder_net = tf.keras.Sequential([
@@ -53,10 +56,10 @@ class Decoder(Model):
         return self.decoder_net(inputs)
 
 class VAE(Model):
-    def __init__(self, latent_dim):
+    def __init__(self, latent_dim, image_size):
         super(VAE, self).__init__()
         self.latent_dim = latent_dim
-        self.encoder = Encoder(latent_dim)
+        self.encoder = Encoder(latent_dim, image_size)
         self.decoder = Decoder(latent_dim)
 
     def sample(self, mean, log_variance):
