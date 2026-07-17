@@ -13,7 +13,7 @@ The VAE consists of:
 ## Training
 
 The model was trained and validated, 80/20 split, using the entire [CelebA dataset](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html), specifically the *Align&Cropped Images*.
-The training was done in 35 epochs with a batch sizes of 128 and a learning rate of 1e-3.
+The training was done in 35 epochs with a batch size of 128 and a learning rate of 1e-3.
 
 
 ## The Results
