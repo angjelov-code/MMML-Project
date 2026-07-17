@@ -51,7 +51,7 @@ def reconstruct_images(vae, test_datasets, num_display, filename="Reconstruction
 
 def interpolate_images(vae, num_steps, data_root, image_name_1, image_name_2, filename="Interpolation.png"):
     """
-    Linear Interpolation two images from the dataset with num_steps steps and saves the result to a file in the images folder
+    Linear Interpolation of two images from the dataset with num_steps steps and saves the result to a file in the images folder
     """
     img1 = preprocessing.preprocess_image(f"{data_root}/{image_name_1}")
     img2 = preprocessing.preprocess_image(f"{data_root}/{image_name_2}")
