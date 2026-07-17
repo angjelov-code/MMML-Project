@@ -1,6 +1,6 @@
 # Final Project for Modern Methods in Machine Learning
 
-A Variational Autoencoder (VAE) was trained on the CelebA dataset. The gotten parameters were then used to generate images from random latent vector. The VAE was also
+A Variational Autoencoder (VAE) was trained on the CelebA dataset. The gotten parameters were then used to generate images from random latent vectors. The VAE was also
 utilized to reconstruct images from the test dataset. Additionally, latent space linear interpolation between two image was performed.
 
 ## Model Architecture
@@ -13,19 +13,19 @@ The VAE consists of:
 ## Training
 
 The model was trained and validated, 80/20 split, using the entire [CelebA dataset](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html), specifically the *Align&Cropped Images*.
-The training was done in 35 epochs with batch sizes of 128 and a learning rate of 1e-3.
+The training was done in 35 epochs with a batch sizes of 128 and a learning rate of 1e-3.
 
 
 ## The Results
 
-### Example of Generation
+### Image Generation
 
 ![image](images/Generation.png)
 
-### Example of Reconstruction
+### Image Reconstruction
 
 ![image](images/Reconstruction.png)
 
-### Example of Interpolation
+### Image Interpolation
 
 ![image](images/Interpolation.png)
